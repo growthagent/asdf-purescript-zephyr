@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+
+# TODO: technically you could build from source as a fallback
+
+set -eo pipefail
+
+ZEPHYR_GITHUB_URL="https://github.com/coot/zephyr"
+
+fail() {
+  echo -e "\e[31mFail:\e[m $*"
+  exit 1
+}
+
+install_purescript_zephyr() {
+  local install_type="$1"
+  local version="$2"
+  local install_path="$3"
+  local tmp_download_dir="$4"
+
+  if [ "$install_type" == "version" ]; then
+    (
+      local archive_file="$(download_and_verify_checksums "$version" "$tmp_download_dir")"
+      tar --strip-components=1 -C "$install_path" -xzf "$archive_file" "zephyr" || fail "Could not uncompress"
+      cd "$install_path"
+      chmod +x "zephyr"
+      mkdir -p "bin"
+      mv "zephyr" "bin"
+      echo "Successfully installed."
+    ) || (
+      rm -rf "$install_path"
+      fail "An error occured."
+    )
+  else
+    fail "asdf-purescript-zephyr only supports release installs"
+  fi
+}
+
+get_asset_name() {
+  local version="$1"
+  local arch="$(uname -m)"
+
+  if [ $arch == "x86_64" ]; then
+    case "$OSTYPE" in
+      linux*)
+        echo "${arch}-linux" ;;
+      darwin*)
+        echo "${arch}-osx" ;;
+      cygwin*) ;&
+      msys*)
+        echo "${arch}-windows" ;;
+      *)
+        fail "Unsupported platform: $OSTYPE" ;;
+    esac
+  else
+    fail "Unsupported architure: ${arch}"
+  fi
+}
+
+download_file() {
+  local download_url="$1"
+  local download_path="$2"
+
+  if [ -n "$GITHUB_API_TOKEN" ]; then
+    STATUSCODE=$(curl --write-out "%{http_code}" -Lo "$download_path" -C -H "Authorization: token $GITHUB_API_TOKEN" - "$download_url")
+  else
+    STATUSCODE=$(curl --write-out "%{http_code}" -Lo "$download_path" -C - "$download_url")
+  fi
+
+  if test $STATUSCODE -eq 404; then
+    echo "Binaries were not found. Full version must be specified, not just major version. Also, don't include the preceding 'v'."
+    exit 1
+  fi
+}
+
+download_and_verify_checksums() {
+  local versions="$1"
+  local tmp_download_dir="$2"
+
+  local asset_name="$(get_asset_name "$version")"
+  local download_url="$ZEPHYR_GITHUB_URL/releases/download/v$version/$asset_name"
+  local checksum_url="$download_url.sha"
+  local checksum_file="$tmp_download_dir/$asset_name.sha1"
+  local archive_url="$download_url.tar.gz"
+  local archive_file="$tmp_download_dir/$asset_name.tar.gz"
+
+  download_file "$checksum_url" "$checksum_file"
+  download_file "$archive_url" "$archive_file"
+
+  if check_checksum "$checksum_file" "$archive_file"; then
+    echo "$archive_file"
+  else
+    fail "Checksum could not be verified."
+  fi
+}
+
+check_checksum() {
+  if [[ -f "$1" && -f "$2" ]]; then
+    local checksum="$(cat $1 | awk '{print $1}')"
+    local archive="$(sha1sum $2 | awk '{print $1}')"
+    if [ "$archive" == "$checksum" ]; then true; else false; fi
+  else
+    fail "Either $1 or a $2 doesn’t exist."
+  fi
+}
+
+tmp_download_dir="$(mktemp -d -t 'asdf_purescript_zephyr_XXXXXX')"
+trap 'rm -rf "${tmp_download_dir}"' EXIT
+
+install_purescript_zephyr "$ASDF_INSTALL_TYPE" "$ASDF_INSTALL_VERSION" "$ASDF_INSTALL_PATH" "$tmp_download_dir"

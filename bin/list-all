@@ -1,0 +1,12 @@
+#!/bin/env bash
+
+ZEPHYR_GITHUB_URL="https://github.com/coot/zephyr"
+
+get_all_versions() {
+  git ls-remote --refs --tags "${ZEPHYR_GITHUB_URL}.git" \
+  | awk -F '[\t/]' '{ gsub(/^v/, "", $4); print $4 }' \
+  | LC_ALL=C sort -t. -k 1,1 -k 2,2n -k 3,3n -k 4,4n -k 5,5n # basically `sort -V`
+}
+
+echo "$OSTYPE"
+get_all_versions | xargs
