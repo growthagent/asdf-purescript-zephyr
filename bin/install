@@ -45,8 +45,7 @@ get_asset_name() {
         echo "${arch}-linux" ;;
       darwin*)
         echo "${arch}-osx" ;;
-      cygwin*) ;&
-      msys*)
+      cygwin* | msys*)
         echo "${arch}-windows" ;;
       *)
         fail "Unsupported platform: $OSTYPE" ;;
