@@ -66,7 +66,7 @@ download_file() {
   fi
 
   if test $STATUSCODE -eq 404; then
-    echo "Binaries were not found. Full version must be specified, not just major version. Also, don't include the preceding 'v'."
+    echo "Binaries were not found. Full version must be specified, not just major version. Also, don’t include the preceding “v”."
     exit 1
   fi
 }
