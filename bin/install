@@ -40,16 +40,30 @@ get_asset_name() {
   local arch="$(uname -m)"
 
   if [ $arch == "x86_64" ]; then
-    case "$OSTYPE" in
-      linux*)
-        echo "${arch}-linux" ;;
-      darwin*)
-        echo "${arch}-osx" ;;
-      cygwin* | msys*)
-        echo "${arch}-windows" ;;
-      *)
-        fail "Unsupported platform: $OSTYPE" ;;
-    esac
+    # pre 0.3
+    if [ -n "$(awk -F '.' '$0 < 1 && $2 < 3' <<< "$version")" ]; then
+      case "$OSTYPE" in
+        linux*)
+          echo "${arch}-linux" ;;
+        darwin*)
+          echo "${arch}-osx" ;;
+        cygwin* | msys*)
+          echo "${arch}-windows" ;;
+        *)
+          fail "Unsupported platform: $OSTYPE" ;;
+      esac
+    else
+      case "$OSTYPE" in
+        linux*)
+          echo "Linux" ;;
+        darwin*)
+          echo "macOS" ;;
+        cygwin* | msys*)
+          echo "Windows" ;;
+        *)
+          fail "Unsupported platform: $OSTYPE" ;;
+      esac
+    fi
   else
     fail "Unsupported architure: ${arch}"
   fi
