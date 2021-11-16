@@ -1,0 +1,11 @@
+asdf-purescript-zephyr
+======================
+
+An https://asdf-vm.com/[`asdf`] plugin for https://github.com/coot/zephyr[`zephyr`], an experimental tree-shaking tool for https://github.com/purescript/purescript[PureScript].
+
+== Install
+
+[source,shell-session]
+----
+$ asdf plugin-add purescript-zephyr https://github.com/instateam/asdf-purescript-zephyr.git
+----
