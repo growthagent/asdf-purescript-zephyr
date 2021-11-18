@@ -101,13 +101,14 @@ download_and_verify_checksums() {
   local tmp_download_dir="$2"
 
   local asset_name="$(get_asset_name "$version")"
-  if grep --quiet "^[0-9]*\."; then
+  if grep --quiet "^[0-9]*\." <<< "$version"; then
     # prepend ‘v’ to semantic versions
     version_="v${version}"
   else
     # some other builds do not use semantic versioning
     version_="${version}"
   fi
+
   local download_url="$ZEPHYR_GITHUB_URL/releases/download/${version_}/$asset_name"
   local checksum_url="$download_url.sha"
   local checksum_file="$tmp_download_dir/$asset_name.sha1"
