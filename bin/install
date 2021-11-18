@@ -37,10 +37,10 @@ install_purescript_zephyr() {
 
 get_asset_name() {
   local version="$1"
-  local arch="$(uname -m)"
 
-  if [ $arch == "x86_64" ]; then
-    if [ "0.2.2" == "$version" ]; then
+  if [ "0.2.2" == "$version" ]; then
+    local arch="$(uname -m)"
+    if [ $arch == "x86_64" ]; then
       case "$OSTYPE" in
         linux*)
           echo "${arch}-linux" ;;
@@ -51,32 +51,32 @@ get_asset_name() {
         *)
           fail "Unsupported platform: $OSTYPE" ;;
       esac
-    # pre 0.2.2
-    elif  [ -n "$(awk -F '.' '$0 < 1 && $2 < 3' <<< "$version")" ]; then
-      case "$OSTYPE" in
-        linux*)
-          echo "linux64" ;;
-        darwin*)
-          echo "macos" ;;
-        cygwin* | msys*)
-          echo "win64" ;;
-        *)
-          fail "Unsupported platform: $OSTYPE" ;;
-      esac
     else
-      case "$OSTYPE" in
-        linux*)
-          echo "Linux" ;;
-        darwin*)
-          echo "macOS" ;;
-        cygwin* | msys*)
-          echo "Windows" ;;
-        *)
-          fail "Unsupported platform: $OSTYPE" ;;
-      esac
+      fail "Unsupported architure: ${arch}"
     fi
+  # pre 0.2.2
+  elif  [ -n "$(awk -F '.' '$0 < 1 && $2 < 3' <<< "$version")" ]; then
+    case "$OSTYPE" in
+      linux*)
+        echo "linux64" ;;
+      darwin*)
+        echo "macos" ;;
+      cygwin* | msys*)
+        echo "win64" ;;
+      *)
+        fail "Unsupported platform: $OSTYPE" ;;
+    esac
   else
-    fail "Unsupported architure: ${arch}"
+    case "$OSTYPE" in
+      linux*)
+        echo "Linux" ;;
+      darwin*)
+        echo "macOS" ;;
+      cygwin* | msys*)
+        echo "Windows" ;;
+      *)
+        fail "Unsupported platform: $OSTYPE" ;;
+    esac
   fi
 }
 
@@ -101,13 +101,14 @@ download_and_verify_checksums() {
   local tmp_download_dir="$2"
 
   local asset_name="$(get_asset_name "$version")"
-  if grep --quiet "^[0-9]*\."; then
+  if grep --quiet "^[0-9]*\." <<< "$version"; then
     # prepend ‘v’ to semantic versions
     version_="v${version}"
   else
     # some other builds do not use semantic versioning
     version_="${version}"
   fi
+
   local download_url="$ZEPHYR_GITHUB_URL/releases/download/${version_}/$asset_name"
   local checksum_url="$download_url.sha"
   local checksum_file="$tmp_download_dir/$asset_name.sha1"
