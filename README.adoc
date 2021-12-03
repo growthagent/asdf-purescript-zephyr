@@ -7,5 +7,5 @@ An https://asdf-vm.com/[`asdf`] plugin for https://github.com/coot/zephyr[`zephy
 
 [source,shell-session]
 ----
-$ asdf plugin-add purescript-zephyr https://github.com/instateam/asdf-purescript-zephyr.git
+$ asdf plugin-add purescript-zephyr https://github.com/growthagent/asdf-purescript-zephyr.git
 ----
