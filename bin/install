@@ -4,7 +4,7 @@
 
 set -eo pipefail
 
-ZEPHYR_GITHUB_URL="https://github.com/coot/zephyr"
+ZEPHYR_GITHUB_URL="https://github.com/MaybeJustJames/zephyr"
 
 fail() {
   echo -e "\e[31mFail:\e[m $*"
